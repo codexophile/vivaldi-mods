@@ -63,6 +63,7 @@
             itemElement.classList.add( 'folder-item' );
 
             if ( child.url ) { // It's a bookmark
+
                 const link = document.createElement( 'a' );
                 link.href = child.url;
                 link.classList.add( 'bookmark-link' );
@@ -72,6 +73,12 @@
                 const faviconEl = generateElements( `<img src='${ faviconSrc }' class='favicon'>`, link );
 
                 itemElement.appendChild( link );
+
+                link.addEventListener( 'click', () => {
+                    const activeTabEl = document.querySelector( '.active [role=document][src]' );
+                    activeTabEl.src = child.url;
+                } );
+
             } else { // It's a subfolder
                 itemElement.innerHTML = `<span class="subfolder-icon">??</span>`;
                 itemElement.classList.add( 'subfolder' );
@@ -245,11 +252,10 @@
         } );
     }
 
-    function generateDoc ( html, returnTrusted ) {
+    function generateDoc ( html ) {
 
         let escapeHTMLPolicy;
 
-        // @ts-ignore
         escapeHTMLPolicy = trustedTypes.createPolicy( "forceInner", {
             createHTML: ( to_escape ) => to_escape
         } );
@@ -262,7 +268,6 @@
         const templateContent = template.content;
         template.remove();
         return templateContent;
-        // return template.content;
 
     }
 
