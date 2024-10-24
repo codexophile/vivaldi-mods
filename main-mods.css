@@ -1,0 +1,14 @@
+/* Hiding bookmark item name */
+.bookmarkbarItem .title {
+    display: none !important;
+}
+
+/* Centering bookmarks bar items */
+.bookmark-bar .observer {
+    justify-content: center;
+}
+
+/* Hiding tab preview thumbnail */
+.thumbnail-image {
+    display: none;
+}
