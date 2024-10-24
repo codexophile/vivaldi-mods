@@ -5,12 +5,6 @@
     addStyles();
     addCustomFolders();
 
-    const button = generateElements( `<button>Test</button>`, bookmarksBar );
-    button.addEventListener( 'click', () => {
-        const webview = document.querySelector( '[role=document][src]' );
-        webview.src = 'https://www.google.com/';
-    } );
-
     // Function to create and add custom folder elements
     function addCustomFolders () {
         chrome.bookmarks.getTree( ( bookmarkTreeNodes ) => {
@@ -37,20 +31,20 @@
         const folderTitleContainer = document.createElement( 'div' );
         folderTitleContainer.classList.add( 'folder-title-container' );
 
-        if ( folder.title && folder.title.trim() !== '' ) {
-            // Named folder - create text element
+        // create image element
+        if ( folder.description ) {
+            const folderImage = document.createElement( 'img' );
+            folderImage.classList.add( 'folder-image' );
+            folderImage.src = `https://www.google.com/s2/favicons?sz=32&domain=${ folder.description }`;
+            folderImage.alt = folder.description;
+            folderTitleContainer.appendChild( folderImage );
+        }
+        // create text element
+        else {
             const folderName = document.createElement( 'span' );
             folderName.textContent = folder.title;
             folderName.classList.add( 'folder-name' );
             folderTitleContainer.appendChild( folderName );
-        } else {
-            // Unnamed folder - create image element
-            const folderImage = document.createElement( 'img' );
-            folderImage.classList.add( 'folder-image' );
-            // Replace this URL with your predefined image URL
-            folderImage.src = 'YOUR_PREDEFINED_IMAGE_URL';
-            folderImage.alt = 'Folder';
-            folderTitleContainer.appendChild( folderImage );
         }
 
         folderElement.appendChild( folderTitleContainer );
