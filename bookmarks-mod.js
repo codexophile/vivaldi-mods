@@ -34,10 +34,10 @@
         folderElement.classList.add( 'custom-folder' );
 
         // Create folder title/image container
-        const folderTitleContainer = document.createElement('div');
-        folderTitleContainer.classList.add('folder-title-container');
+        const folderTitleContainer = document.createElement( 'div' );
+        folderTitleContainer.classList.add( 'folder-title-container' );
 
-        if (folder.title && folder.title.trim() !== '') {
+        if ( folder.title && folder.title.trim() !== '' ) {
             // Named folder - create text element
             const folderName = document.createElement( 'span' );
             folderName.textContent = folder.title;
@@ -45,15 +45,15 @@
             folderTitleContainer.appendChild( folderName );
         } else {
             // Unnamed folder - create image element
-            const folderImage = document.createElement('img');
-            folderImage.classList.add('folder-image');
+            const folderImage = document.createElement( 'img' );
+            folderImage.classList.add( 'folder-image' );
             // Replace this URL with your predefined image URL
             folderImage.src = 'YOUR_PREDEFINED_IMAGE_URL';
             folderImage.alt = 'Folder';
-            folderTitleContainer.appendChild(folderImage);
+            folderTitleContainer.appendChild( folderImage );
         }
 
-        folderElement.appendChild(folderTitleContainer);
+        folderElement.appendChild( folderTitleContainer );
 
         const expandedContent = document.createElement( 'div' );
         expandedContent.classList.add( 'expanded-content' );
@@ -65,8 +65,8 @@
             if ( child.url ) { // It's a bookmark
                 const link = document.createElement( 'a' );
                 link.href = child.url;
-                link.classList.add('bookmark-link');
-                link.title = `${child.title}\n${child.url}`;
+                link.classList.add( 'bookmark-link' );
+                link.title = `${ child.title }\n${ child.url }`;
 
                 const faviconSrc = `https://www.google.com/s2/favicons?sz=32&domain=${ child.url }`;
                 const faviconEl = generateElements( `<img src='${ faviconSrc }' class='favicon'>`, link );
@@ -216,6 +216,70 @@
         const styleElement = document.createElement( 'style' );
         styleElement.textContent = styles;
         document.head.appendChild( styleElement );
+    }
+
+    function waitForAll ( selector ) {
+        // waitFor( '[role=main]' ).then( ( els ) => {} )
+
+        return new Promise( ( resolve ) => {
+
+            if ( document.querySelector( selector ) ) { return resolve( document.querySelectorAll( selector ) ); }
+
+            const observer = new MutationObserver( () => {
+                if ( document.querySelector( selector ) ) {
+                    resolve( document.querySelectorAll( selector ) );
+                    observer.disconnect();
+                }
+            } );
+
+            observer.observe( document.body, { childList: true, subtree: true } );
+
+        } );
+
+    }
+
+    function waitFor ( selector ) {
+        // waitFor( '[role=main]' ).then( ( el ) => {} )
+        return new Promise( ( resolve ) => {
+            waitForAll( selector ).then( ( els ) => { resolve( els[ 0 ] ); } );
+        } );
+    }
+
+    function generateDoc ( html, returnTrusted ) {
+
+        let escapeHTMLPolicy;
+
+        // @ts-ignore
+        escapeHTMLPolicy = trustedTypes.createPolicy( "forceInner", {
+            createHTML: ( to_escape ) => to_escape
+        } );
+
+        const template = document.createElement( 'template' );
+        document.body.prepend( template );
+
+        template.innerHTML = escapeHTMLPolicy.createHTML( html.trim() );
+
+        const templateContent = template.content;
+        template.remove();
+        return templateContent;
+        // return template.content;
+
+    }
+
+    function generateElements ( html, parent, returnTrusted ) {
+
+        const doc = generateDoc( html, returnTrusted );
+        const children = doc.children;
+        let returnChildren = [ ...children ];
+        if ( parent ) {
+            returnChildren.length = 0;
+            for ( const child of children ) {
+                returnChildren.push(
+                    parent.appendChild( child ) );
+            }
+        }
+        return returnChildren.length === 1 ? returnChildren[ 0 ] : returnChildren;
+
     }
 
 } )();
