@@ -1,3 +1,15 @@
+/* border with accent color */
+.inner {
+    border-style: none solid;
+    border-width: 3px;
+    border-color: var(--colorAccentBg);
+}
+
+/* statusbar with accent color */
+footer#footer {
+    background-color: var(--colorAccentBg) !important;
+}
+
 /* Hiding bookmark item name */
 .bookmarkbarItem .title {
     display: none !important;
