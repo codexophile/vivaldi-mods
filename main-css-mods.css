@@ -1,12 +1,14 @@
-/* border with accent color */
+/* border with accent color*/
 .inner {
     border-style: none solid;
     border-width: 3px;
     border-color: var(--colorAccentBg);
 }
 
-/* statusbar with accent color */
-footer#footer {
+/* accent color on other elements */
+footer#footer,
+#panels,
+#panel_switch {
     background-color: var(--colorAccentBg) !important;
 }
 
