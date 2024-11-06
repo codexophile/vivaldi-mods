@@ -1,25 +1,52 @@
 ( async function () {
     'use strict';
 
-    const bookmarksBar = await waitFor( '[aria-label=Bookmarks] > .observer' );
-    addStyles();
-    addCustomFolders();
+    let bookmarksBar;
 
-    // Function to create and add custom folder elements
-    function addCustomFolders () {
-        chrome.bookmarks.getTree( ( bookmarkTreeNodes ) => {
-            const bookmarkBarFolder = bookmarkTreeNodes[ 0 ].children[ 0 ].children[ 0 ];
-            console.log( bookmarkBarFolder );
+    // Initialize the interface
+    async function initializeInterface () {
+        bookmarksBar = await waitFor( '[aria-label=Bookmarks] > .observer' );
+        addStyles();
+        await renderBookmarks();
+    }
 
-            if ( bookmarkBarFolder && bookmarkBarFolder.children ) {
-                bookmarkBarFolder.children.forEach( bookmarkNode => {
-                    if ( bookmarkNode.children ) { // It's a folder
-                        const folderElement = createFolderElement( bookmarkNode );
-                        bookmarksBar.appendChild( folderElement );
-                    }
-                } );
-            }
+    // New function to clear and reload bookmarks
+    async function reloadBookmarks () {
+        // Clear existing bookmarks
+        bookmarksBar.querySelectorAll( '.custom-folder' ).forEach( folder => {
+            folder.remove();
         } );
+        // Re-render bookmarks
+        await renderBookmarks();
+    }
+
+    // Separated bookmark rendering logic
+    function renderBookmarks () {
+        return new Promise( ( resolve ) => {
+            chrome.bookmarks.getTree( ( bookmarkTreeNodes ) => {
+                const bookmarkBarFolder = bookmarkTreeNodes[ 0 ].children[ 0 ].children[ 0 ];
+
+                if ( bookmarkBarFolder && bookmarkBarFolder.children ) {
+                    bookmarkBarFolder.children.forEach( bookmarkNode => {
+                        if ( bookmarkNode.children ) { // It's a folder
+                            const folderElement = createFolderElement( bookmarkNode );
+                            bookmarksBar.prepend( folderElement );
+                        }
+                    } );
+                }
+                resolve();
+            } );
+        } );
+    }
+
+    // Add reload button
+    function addReloadButton () {
+        const reloadButton = document.createElement( 'div' );
+        reloadButton.classList.add( 'reload-button' );
+        reloadButton.innerHTML = '↻';
+        reloadButton.title = 'Reload Bookmarks';
+        reloadButton.addEventListener( 'click', reloadBookmarks );
+        bookmarksBar.parentElement.insertBefore( reloadButton, bookmarksBar );
     }
 
     // Function to create a folder element
@@ -57,7 +84,6 @@
             itemElement.classList.add( 'folder-item' );
 
             if ( child.url ) { // It's a bookmark
-
                 const link = document.createElement( 'a' );
                 link.href = child.url;
                 link.classList.add( 'bookmark-link' );
@@ -74,7 +100,7 @@
                 } );
 
             } else { // It's a subfolder
-                itemElement.innerHTML = `<span class="subfolder-icon">??</span>`;
+                itemElement.innerHTML = `<span class="subfolder-icon">📁</span>`;
                 itemElement.classList.add( 'subfolder' );
                 itemElement.title = child.title || 'Unnamed Folder';
             }
@@ -106,6 +132,25 @@
                 margin-right: 5px;
                 border-radius: 4px;
                 transition: all 0.3s ease;
+            }
+
+            .reload-button {
+                cursor: pointer;
+                padding: 5px 8px;
+                margin-right: 5px;
+                border-radius: 4px;
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+                font-size: 16px;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .reload-button:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+                transform: rotate(180deg);
             }
 
             .custom-folder:hover {
@@ -220,11 +265,10 @@
     }
 
     function waitForAll ( selector ) {
-        // waitFor( '[role=main]' ).then( ( els ) => {} )
-
         return new Promise( ( resolve ) => {
-
-            if ( document.querySelector( selector ) ) { return resolve( document.querySelectorAll( selector ) ); }
+            if ( document.querySelector( selector ) ) {
+                return resolve( document.querySelectorAll( selector ) );
+            }
 
             const observer = new MutationObserver( () => {
                 if ( document.querySelector( selector ) ) {
@@ -234,23 +278,19 @@
             } );
 
             observer.observe( document.body, { childList: true, subtree: true } );
-
         } );
-
     }
 
     function waitFor ( selector ) {
-        // waitFor( '[role=main]' ).then( ( el ) => {} )
         return new Promise( ( resolve ) => {
-            waitForAll( selector ).then( ( els ) => { resolve( els[ 0 ] ); } );
+            waitForAll( selector ).then( ( els ) => {
+                resolve( els[ 0 ] );
+            } );
         } );
     }
 
     function generateDoc ( html ) {
-
-        let escapeHTMLPolicy;
-
-        escapeHTMLPolicy = trustedTypes.createPolicy( "forceInner", {
+        let escapeHTMLPolicy = trustedTypes.createPolicy( "forceInner", {
             createHTML: ( to_escape ) => to_escape
         } );
 
@@ -262,11 +302,9 @@
         const templateContent = template.content;
         template.remove();
         return templateContent;
-
     }
 
     function generateElements ( html, parent, returnTrusted ) {
-
         const doc = generateDoc( html, returnTrusted );
         const children = doc.children;
         let returnChildren = [ ...children ];
@@ -278,7 +316,9 @@
             }
         }
         return returnChildren.length === 1 ? returnChildren[ 0 ] : returnChildren;
-
     }
 
+    // Initialize the interface and add reload button
+    await initializeInterface();
+    addReloadButton();
 } )();
