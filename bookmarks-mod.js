@@ -1,130 +1,130 @@
 ( async function () {
-    'use strict';
+  'use strict';
 
-    let bookmarksBar;
+  let bookmarksBar;
 
-    // Initialize the interface
-    async function initializeInterface () {
-        bookmarksBar = await waitFor( '[aria-label=Bookmarks] > .observer' );
-        addStyles();
-        await renderBookmarks();
-    }
+  // Initialize the interface
+  async function initializeInterface () {
+    bookmarksBar = await waitFor( '[aria-label=Bookmarks] > .observer' );
+    addStyles();
+    await renderBookmarks();
+  }
 
-    // New function to clear and reload bookmarks
-    async function reloadBookmarks () {
-        // Clear existing bookmarks
-        bookmarksBar.querySelectorAll( '.custom-folder' ).forEach( folder => {
-            folder.remove();
-        } );
-        // Re-render bookmarks
-        await renderBookmarks();
-    }
+  // New function to clear and reload bookmarks
+  async function reloadBookmarks () {
+    // Clear existing bookmarks
+    bookmarksBar.querySelectorAll( '.custom-folder' ).forEach( folder => {
+      folder.remove();
+    } );
+    // Re-render bookmarks
+    await renderBookmarks();
+  }
 
-    // Separated bookmark rendering logic
-    function renderBookmarks () {
-        return new Promise( ( resolve ) => {
-            chrome.bookmarks.getTree( ( bookmarkTreeNodes ) => {
-                const bookmarkBarFolder = bookmarkTreeNodes[ 0 ].children[ 0 ].children[ 0 ];
+  // Separated bookmark rendering logic
+  function renderBookmarks () {
+    return new Promise( ( resolve ) => {
+      chrome.bookmarks.getTree( ( bookmarkTreeNodes ) => {
+        const bookmarkBarFolder = bookmarkTreeNodes[ 0 ].children[ 0 ].children[ 0 ];
 
-                if ( bookmarkBarFolder && bookmarkBarFolder.children ) {
-                    bookmarkBarFolder.children.forEach( bookmarkNode => {
-                        if ( bookmarkNode.children ) { // It's a folder
-                            const folderElement = createFolderElement( bookmarkNode );
-                            bookmarksBar.prepend( folderElement );
-                        }
-                    } );
-                }
-                resolve();
-            } );
-        } );
-    }
-
-    // Add reload button
-    function addReloadButton () {
-        const reloadButton = document.createElement( 'div' );
-        reloadButton.classList.add( 'reload-button' );
-        reloadButton.innerHTML = '↻';
-        reloadButton.title = 'Reload Bookmarks';
-        reloadButton.addEventListener( 'click', reloadBookmarks );
-        bookmarksBar.parentElement.insertBefore( reloadButton, bookmarksBar );
-    }
-
-    // Function to create a folder element
-    function createFolderElement ( folder ) {
-        const folderElement = document.createElement( 'div' );
-        folderElement.classList.add( 'custom-folder' );
-
-        // Create folder title/image container
-        const folderTitleContainer = document.createElement( 'div' );
-        folderTitleContainer.classList.add( 'folder-title-container' );
-
-        // create image element
-        if ( folder.description ) {
-            const folderImage = document.createElement( 'img' );
-            folderImage.classList.add( 'folder-image' );
-            folderImage.src = `https://www.google.com/s2/favicons?sz=32&domain=${ folder.description }`;
-            folderImage.alt = folder.description;
-            folderTitleContainer.appendChild( folderImage );
-        }
-        // create text element
-        else {
-            const folderName = document.createElement( 'span' );
-            folderName.textContent = folder.title;
-            folderName.classList.add( 'folder-name' );
-            folderTitleContainer.appendChild( folderName );
-        }
-
-        folderElement.appendChild( folderTitleContainer );
-
-        const expandedContent = document.createElement( 'div' );
-        expandedContent.classList.add( 'expanded-content' );
-
-        folder.children.forEach( child => {
-            const itemElement = document.createElement( 'div' );
-            itemElement.classList.add( 'folder-item' );
-
-            if ( child.url ) { // It's a bookmark
-                const link = document.createElement( 'a' );
-                link.href = child.url;
-                link.classList.add( 'bookmark-link' );
-                link.title = `${ child.title }\n${ child.url }`;
-
-                const faviconSrc = `https://www.google.com/s2/favicons?sz=32&domain=${ child.url }`;
-                const faviconEl = generateElements( `<img src='${ faviconSrc }' class='favicon'>`, link );
-
-                itemElement.appendChild( link );
-
-                link.addEventListener( 'click', () => {
-                    const activeTabEl = document.querySelector( '.active [role=document][src]' );
-                    activeTabEl.src = child.url;
-                } );
-
-            } else { // It's a subfolder
-                itemElement.innerHTML = `<span class="subfolder-icon">📁</span>`;
-                itemElement.classList.add( 'subfolder' );
-                itemElement.title = child.title || 'Unnamed Folder';
+        if ( bookmarkBarFolder && bookmarkBarFolder.children ) {
+          bookmarkBarFolder.children.forEach( bookmarkNode => {
+            if ( bookmarkNode.children ) { // It's a folder
+              const folderElement = createFolderElement( bookmarkNode );
+              bookmarksBar.prepend( folderElement );
             }
+          } );
+        }
+        resolve();
+      } );
+    } );
+  }
 
-            expandedContent.appendChild( itemElement );
-        } );
+  // Add reload button
+  function addReloadButton () {
+    const reloadButton = document.createElement( 'div' );
+    reloadButton.classList.add( 'reload-button' );
+    reloadButton.innerHTML = '↻';
+    reloadButton.title = 'Reload Bookmarks';
+    reloadButton.addEventListener( 'click', reloadBookmarks );
+    bookmarksBar.parentElement.insertBefore( reloadButton, bookmarksBar );
+  }
 
-        folderElement.appendChild( expandedContent );
+  // Function to create a folder element
+  function createFolderElement ( folder ) {
+    const folderElement = document.createElement( 'div' );
+    folderElement.classList.add( 'custom-folder' );
 
-        // Add event listeners for hover
-        folderElement.addEventListener( 'mouseenter', () => {
-            folderElement.classList.add( 'expanded' );
-        } );
+    // Create folder title/image container
+    const folderTitleContainer = document.createElement( 'div' );
+    folderTitleContainer.classList.add( 'folder-title-container' );
 
-        folderElement.addEventListener( 'mouseleave', () => {
-            folderElement.classList.remove( 'expanded' );
-        } );
-
-        return folderElement;
+    // create image element
+    if ( folder.description ) {
+      const folderImage = document.createElement( 'img' );
+      folderImage.classList.add( 'folder-image' );
+      folderImage.src = `https://www.google.com/s2/favicons?sz=32&domain=${ folder.description }`;
+      folderImage.alt = folder.description;
+      folderTitleContainer.appendChild( folderImage );
+    }
+    // create text element
+    else {
+      const folderName = document.createElement( 'span' );
+      folderName.textContent = folder.title;
+      folderName.classList.add( 'folder-name' );
+      folderTitleContainer.appendChild( folderName );
     }
 
-    // Function to add styles to the document
-    function addStyles () {
-        const styles = `
+    folderElement.appendChild( folderTitleContainer );
+
+    const expandedContent = document.createElement( 'div' );
+    expandedContent.classList.add( 'expanded-content' );
+
+    folder.children.forEach( child => {
+      const itemElement = document.createElement( 'div' );
+      itemElement.classList.add( 'folder-item' );
+
+      if ( child.url ) { // It's a bookmark
+        const link = document.createElement( 'a' );
+        link.href = child.url;
+        link.classList.add( 'bookmark-link' );
+        itemElement.title = `${ child.title }`;
+
+        const faviconSrc = `https://www.google.com/s2/favicons?sz=32&domain=${ child.url }`;
+        const faviconEl = generateElements( `<img src='${ faviconSrc }' class='favicon'>`, link );
+
+        itemElement.appendChild( link );
+
+        link.addEventListener( 'click', () => {
+          const activeTabEl = document.querySelector( '.active [role=document][src]' );
+          activeTabEl.src = child.url;
+        } );
+
+      } else { // It's a subfolder
+        itemElement.innerHTML = `<span class="subfolder-icon">📁</span>`;
+        itemElement.classList.add( 'subfolder' );
+        itemElement.title = child.title || 'Unnamed Folder';
+      }
+
+      expandedContent.appendChild( itemElement );
+    } );
+
+    folderElement.appendChild( expandedContent );
+
+    // Add event listeners for hover
+    folderElement.addEventListener( 'mouseenter', () => {
+      folderElement.classList.add( 'expanded' );
+    } );
+
+    folderElement.addEventListener( 'mouseleave', () => {
+      folderElement.classList.remove( 'expanded' );
+    } );
+
+    return folderElement;
+  }
+
+  // Function to add styles to the document
+  function addStyles () {
+    const styles = `
             .custom-folder {
                 position: relative;
                 cursor: pointer;
@@ -259,66 +259,66 @@
             }
         `;
 
-        const styleElement = document.createElement( 'style' );
-        styleElement.textContent = styles;
-        document.head.appendChild( styleElement );
-    }
+    const styleElement = document.createElement( 'style' );
+    styleElement.textContent = styles;
+    document.head.appendChild( styleElement );
+  }
 
-    function waitForAll ( selector ) {
-        return new Promise( ( resolve ) => {
-            if ( document.querySelector( selector ) ) {
-                return resolve( document.querySelectorAll( selector ) );
-            }
+  function waitForAll ( selector ) {
+    return new Promise( ( resolve ) => {
+      if ( document.querySelector( selector ) ) {
+        return resolve( document.querySelectorAll( selector ) );
+      }
 
-            const observer = new MutationObserver( () => {
-                if ( document.querySelector( selector ) ) {
-                    resolve( document.querySelectorAll( selector ) );
-                    observer.disconnect();
-                }
-            } );
-
-            observer.observe( document.body, { childList: true, subtree: true } );
-        } );
-    }
-
-    function waitFor ( selector ) {
-        return new Promise( ( resolve ) => {
-            waitForAll( selector ).then( ( els ) => {
-                resolve( els[ 0 ] );
-            } );
-        } );
-    }
-
-    function generateDoc ( html ) {
-        let escapeHTMLPolicy = trustedTypes.createPolicy( "forceInner", {
-            createHTML: ( to_escape ) => to_escape
-        } );
-
-        const template = document.createElement( 'template' );
-        document.body.prepend( template );
-
-        template.innerHTML = escapeHTMLPolicy.createHTML( html.trim() );
-
-        const templateContent = template.content;
-        template.remove();
-        return templateContent;
-    }
-
-    function generateElements ( html, parent, returnTrusted ) {
-        const doc = generateDoc( html, returnTrusted );
-        const children = doc.children;
-        let returnChildren = [ ...children ];
-        if ( parent ) {
-            returnChildren.length = 0;
-            for ( const child of children ) {
-                returnChildren.push(
-                    parent.appendChild( child ) );
-            }
+      const observer = new MutationObserver( () => {
+        if ( document.querySelector( selector ) ) {
+          resolve( document.querySelectorAll( selector ) );
+          observer.disconnect();
         }
-        return returnChildren.length === 1 ? returnChildren[ 0 ] : returnChildren;
-    }
+      } );
 
-    // Initialize the interface and add reload button
-    await initializeInterface();
-    addReloadButton();
+      observer.observe( document.body, { childList: true, subtree: true } );
+    } );
+  }
+
+  function waitFor ( selector ) {
+    return new Promise( ( resolve ) => {
+      waitForAll( selector ).then( ( els ) => {
+        resolve( els[ 0 ] );
+      } );
+    } );
+  }
+
+  function generateDoc ( html ) {
+    let escapeHTMLPolicy = trustedTypes.createPolicy( "forceInner", {
+      createHTML: ( to_escape ) => to_escape
+    } );
+
+    const template = document.createElement( 'template' );
+    document.body.prepend( template );
+
+    template.innerHTML = escapeHTMLPolicy.createHTML( html.trim() );
+
+    const templateContent = template.content;
+    template.remove();
+    return templateContent;
+  }
+
+  function generateElements ( html, parent, returnTrusted ) {
+    const doc = generateDoc( html, returnTrusted );
+    const children = doc.children;
+    let returnChildren = [ ...children ];
+    if ( parent ) {
+      returnChildren.length = 0;
+      for ( const child of children ) {
+        returnChildren.push(
+          parent.appendChild( child ) );
+      }
+    }
+    return returnChildren.length === 1 ? returnChildren[ 0 ] : returnChildren;
+  }
+
+  // Initialize the interface and add reload button
+  await initializeInterface();
+  addReloadButton();
 } )();
