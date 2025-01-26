@@ -240,7 +240,7 @@
             .folder-item::after {
                 content: attr(title);
                 position: absolute;
-                bottom: 100%;
+                bottom: 0%;
                 left: 50%;
                 transform: translateX(-50%);
                 background-color: rgba(0, 0, 0, 0.8);
