@@ -1,28 +1,28 @@
 /* border with accent color*/
-.inner {
+/* .inner {
     border-style: none solid;
     border-width: 3px;
     border-color: var(--colorAccentBg);
-}
+} */
 
 /* accent color on other elements */
 footer#footer,
 #panels,
 #panel_switch {
-    background-color: var(--colorAccentBg) !important;
+  background-color: var(--colorAccentBg) !important;
 }
 
 /* Hiding bookmark item name */
 .bookmarkbarItem .title {
-    display: none !important;
+  display: none !important;
 }
 
 /* Centering bookmarks bar items */
 .bookmark-bar .observer {
-    justify-content: center;
+  justify-content: center;
 }
 
 /* Hiding tab preview thumbnail */
 .thumbnail-image {
-    display: none;
+  display: none;
 }
