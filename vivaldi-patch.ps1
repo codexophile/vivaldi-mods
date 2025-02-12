@@ -1,7 +1,6 @@
 # Author: debiedowner (original batch script)
-# PowerShell conversion
+
 . "C:\mega\IDEs\powershell\#lib\functions.ps1"
-# Make current directory work when run as administrator
 RunAsAdmin
 Set-Location -Path $PSScriptRoot
 
