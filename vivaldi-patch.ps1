@@ -4,7 +4,9 @@
 RunAsAdmin
 Set-Location -Path $PSScriptRoot
 
-$installPath = "C:\Program Files\Vivaldi\Application\"
+# $installPath = "C:\Program Files\Vivaldi\Application\"
+$LocalAppDataPath = $env:LOCALAPPDATA
+$installPath = "$LocalAppDataPath\Vivaldi\Application\"
 Write-Host "Searching at: $installPath"
 
 $latestVersionFolder = Get-ChildItem -Path $installPath -Recurse -File |
