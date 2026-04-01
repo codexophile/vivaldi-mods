@@ -4,6 +4,7 @@
   let bookmarksBar;
   let reloadButton;
   let stylesInjected = false;
+  let autoHideLockCount = 0;
 
   // Initialize the interface
   async function initializeInterface() {
@@ -13,6 +14,24 @@
       ensureReloadButton();
     });
     addStyles();
+  }
+
+  function setAutoHideLock(shouldLock) {
+    autoHideLockCount = shouldLock
+      ? autoHideLockCount + 1
+      : Math.max(0, autoHideLockCount - 1);
+
+    const locked = autoHideLockCount > 0;
+    const browserEl = document.getElementById('browser');
+    const autoHideRoot = document.querySelector('.auto-hide');
+
+    if (browserEl) {
+      browserEl.classList.toggle('auto-hide-visible', locked);
+    }
+
+    if (autoHideRoot) {
+      autoHideRoot.classList.toggle('vbm-force-show', locked);
+    }
   }
 
   // Central MutationObserver manager
@@ -295,10 +314,12 @@
     // Add event listeners for hover
     folderWrapper.addEventListener('mouseenter', () => {
       folderWrapper.classList.add('vbm-expanded');
+      setAutoHideLock(true);
     });
 
     folderWrapper.addEventListener('mouseleave', () => {
       folderWrapper.classList.remove('vbm-expanded');
+      setAutoHideLock(false);
     });
 
     return folderWrapper;
@@ -309,6 +330,12 @@
     if (stylesInjected) return;
 
     const styles = `
+      .auto-hide.vbm-force-show .auto-hide-wrapper.top {
+        transform: translateY(0) !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+      }
+
       .bookmark-bar,
       .bookmark-bar .observer {
         overflow: visible !important;
