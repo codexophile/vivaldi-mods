@@ -309,6 +309,11 @@
     if (stylesInjected) return;
 
     const styles = `
+      .bookmark-bar,
+      .bookmark-bar .observer {
+        overflow: visible !important;
+          }
+
         .bookmark-bar .vbm-folder-wrap {
           position: relative;
             }
