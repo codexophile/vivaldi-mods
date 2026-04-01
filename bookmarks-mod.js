@@ -181,7 +181,7 @@
     // Clear existing bookmarks
     if (!bookmarksBar) return;
 
-    bookmarksBar.querySelectorAll('.vbm-custom-folder').forEach(folder => {
+    bookmarksBar.querySelectorAll('.vbm-folder-wrap').forEach(folder => {
       folder.remove();
     });
     // Re-render bookmarks
@@ -222,7 +222,11 @@
 
   // Function to create a folder element
   function createFolderElement(folder) {
-    const folderElement = document.createElement('div');
+    const folderWrapper = document.createElement('div');
+    folderWrapper.classList.add('vbm-folder-wrap');
+
+    const folderElement = document.createElement('button');
+    folderElement.type = 'button';
     folderElement.classList.add('vbm-custom-folder');
 
     // Create folder title/image container
@@ -285,18 +289,19 @@
       expandedContent.appendChild(itemElement);
     });
 
-    folderElement.appendChild(expandedContent);
+    folderWrapper.appendChild(folderElement);
+    folderWrapper.appendChild(expandedContent);
 
     // Add event listeners for hover
-    folderElement.addEventListener('mouseenter', () => {
-      folderElement.classList.add('vbm-expanded');
+    folderWrapper.addEventListener('mouseenter', () => {
+      folderWrapper.classList.add('vbm-expanded');
     });
 
-    folderElement.addEventListener('mouseleave', () => {
-      folderElement.classList.remove('vbm-expanded');
+    folderWrapper.addEventListener('mouseleave', () => {
+      folderWrapper.classList.remove('vbm-expanded');
     });
 
-    return folderElement;
+    return folderWrapper;
   }
 
   // Function to add styles to the document
@@ -304,12 +309,20 @@
     if (stylesInjected) return;
 
     const styles = `
+        .bookmark-bar .vbm-folder-wrap {
+          position: relative;
+            }
+
         .bookmark-bar .vbm-custom-folder {
                 position: relative;
                 cursor: pointer;
                 padding: 5px;
                 margin-right: 1px;
                 border-radius: 4px;
+          border: 0;
+          background: transparent;
+          color: inherit;
+          font: inherit;
                 transition: all 0.3s ease;
             }
 
@@ -375,7 +388,7 @@
                 overflow-y: auto;
             }
 
-              .bookmark-bar .vbm-custom-folder.vbm-expanded .vbm-expanded-content {
+              .bookmark-bar .vbm-folder-wrap.vbm-expanded .vbm-expanded-content {
                 opacity: 1;
                 transform: translateY(0);
                 pointer-events: auto;
